@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Log in · ShopLite{% endblock %}
+{% block content %}
+<div class="max-w-sm mx-auto bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+  <h1 class="text-xl font-semibold mb-4">Log in</h1>
+  {% if error %}
+    <p id="login-error" class="mb-4 text-sm text-rose-700 bg-rose-50 rounded px-3 py-2">{{ error }}</p>
+  {% endif %}
+  <form method="post" id="login-form" class="space-y-4">
+    <label class="block text-sm">Username
+      <input id="username" name="username" autocomplete="username"
+             class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+    </label>
+    <label class="block text-sm">Password
+      <input id="password" name="password" type="password" autocomplete="current-password"
+             class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+    </label>
+    <button type="submit" id="login-button"
+            class="w-full rounded-md bg-indigo-600 text-white py-2 font-medium hover:bg-indigo-700">Log in</button>
+  </form>
+</div>
+{% endblock %}
