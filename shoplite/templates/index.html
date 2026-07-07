@@ -1,5 +1,49 @@
 {% extends "base.html" %}
 {% block content %}
-<h1 class="text-2xl font-semibold">Welcome to ShopLite</h1>
-<p class="text-slate-500 mt-2">A tiny store built as a target for test automation.</p>
+<div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
+  <div>
+    <h1 class="text-2xl font-semibold">Catalog</h1>
+    <p class="text-slate-500 text-sm" id="result-count">{{ products|length }} product{{ '' if products|length == 1 else 's' }}</p>
+  </div>
+  <form method="get" id="filter-form" class="flex flex-wrap gap-2 text-sm">
+    <input id="search" name="q" value="{{ q }}" placeholder="Search products"
+           class="rounded-md border border-slate-300 px-3 py-2">
+    <select id="category" name="category" class="rounded-md border border-slate-300 px-3 py-2">
+      <option value="">All categories</option>
+      {% for c in categories %}
+        <option value="{{ c }}" {{ 'selected' if c == category }}>{{ c }}</option>
+      {% endfor %}
+    </select>
+    <select id="sort" name="sort" class="rounded-md border border-slate-300 px-3 py-2">
+      <option value="name" {{ 'selected' if sort == 'name' }}>Name</option>
+      <option value="price_asc" {{ 'selected' if sort == 'price_asc' }}>Price: low to high</option>
+      <option value="price_desc" {{ 'selected' if sort == 'price_desc' }}>Price: high to low</option>
+    </select>
+    <button id="search-button" class="rounded-md bg-indigo-600 text-white px-4 py-2">Apply</button>
+  </form>
+</div>
+
+{% if products %}
+<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" id="product-grid">
+  {% for p in products %}
+  <div class="product-card bg-white rounded-xl border border-slate-200 p-4 flex flex-col" data-sku="{{ p['sku'] }}">
+    <span class="text-xs uppercase tracking-wide text-slate-400">{{ p['category'] }}</span>
+    <a href="{{ url_for('shop.product', product_id=p['id']) }}" class="product-name font-medium mt-1 hover:text-indigo-600">{{ p['name'] }}</a>
+    <p class="text-sm text-slate-500 mt-1 flex-1">{{ p['description'] }}</p>
+    <div class="flex items-center justify-between mt-4">
+      <span class="product-price font-semibold">{{ p['price_cents']|money }}</span>
+      {% if p['stock'] > 0 %}
+        <form method="post" action="{{ url_for('shop.add_to_cart', product_id=p['id']) }}">
+          <button class="add-to-cart text-sm rounded-md bg-slate-900 text-white px-3 py-1.5 hover:bg-indigo-600">Add to cart</button>
+        </form>
+      {% else %}
+        <span class="out-of-stock text-sm text-rose-600">Out of stock</span>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p id="no-results" class="text-slate-500">No products match your search.</p>
+{% endif %}
 {% endblock %}

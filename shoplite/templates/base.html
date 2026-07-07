@@ -12,6 +12,7 @@
       <a href="{{ url_for('shop.index') }}" class="font-bold text-indigo-600 text-lg" data-testid="brand">ShopLite</a>
       <div class="flex items-center gap-4 text-sm">
         {% if g.user %}
+          <a href="{{ url_for('shop.cart') }}" id="cart-link" class="text-slate-600 hover:text-indigo-600">Cart (<span id="cart-count">{{ cart_count }}</span>)</a>
           <span id="current-user" class="text-slate-500">{{ g.user['username'] }}</span>
           <a href="{{ url_for('auth.logout') }}" id="logout-link" class="text-slate-600 hover:text-indigo-600">Log out</a>
         {% else %}

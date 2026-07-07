@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}{{ product['name'] }} · ShopLite{% endblock %}
+{% block content %}
+<a href="{{ url_for('shop.index') }}" class="text-sm text-indigo-600">&larr; Back to catalog</a>
+<div class="bg-white rounded-xl border border-slate-200 p-6 mt-4 max-w-xl">
+  <span class="text-xs uppercase tracking-wide text-slate-400">{{ product['category'] }} · {{ product['sku'] }}</span>
+  <h1 id="product-title" class="text-2xl font-semibold mt-1">{{ product['name'] }}</h1>
+  <p class="text-slate-600 mt-2">{{ product['description'] }}</p>
+  <p id="product-price" class="text-xl font-semibold mt-4">{{ product['price_cents']|money }}</p>
+  <p id="product-stock" class="text-sm text-slate-500">{{ product['stock'] }} in stock</p>
+  {% if product['stock'] > 0 %}
+  <form method="post" action="{{ url_for('shop.add_to_cart', product_id=product['id']) }}" class="mt-4 flex gap-2" id="add-form">
+    <input id="quantity" name="quantity" type="number" value="1" min="1"
+           class="w-20 rounded-md border border-slate-300 px-3 py-2">
+    <button id="add-to-cart" class="rounded-md bg-indigo-600 text-white px-4 py-2">Add to cart</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

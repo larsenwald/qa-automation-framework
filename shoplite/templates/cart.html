@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Cart · ShopLite{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Your cart</h1>
+{% if rows %}
+<table class="w-full bg-white rounded-xl border border-slate-200 text-sm" id="cart-table">
+  <thead class="text-left text-slate-500 border-b">
+    <tr><th class="p-3">Item</th><th class="p-3">Price</th><th class="p-3">Qty</th><th class="p-3">Total</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for r in rows %}
+    <tr class="cart-row border-b last:border-0" data-sku="{{ r['sku'] }}">
+      <td class="p-3 item-name">{{ r['name'] }}</td>
+      <td class="p-3">{{ r['price_cents']|money }}</td>
+      <td class="p-3 item-qty">{{ r['quantity'] }}</td>
+      <td class="p-3 item-total">{{ r['line_total']|money }}</td>
+      <td class="p-3 text-right">
+        <form method="post" action="{{ url_for('shop.remove_from_cart', product_id=r['id']) }}">
+          <button class="remove-item text-rose-600 hover:underline">Remove</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<div class="flex justify-end mt-4 text-lg">
+  <span>Subtotal:&nbsp;</span><strong id="cart-subtotal">{{ subtotal|money }}</strong>
+</div>
+{% else %}
+<p id="empty-cart" class="text-slate-500">Your cart is empty.</p>
+{% endif %}
+{% endblock %}
