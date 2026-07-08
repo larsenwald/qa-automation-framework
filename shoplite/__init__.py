@@ -19,9 +19,10 @@ def create_app(test_config=None):
     os.makedirs(app.instance_path, exist_ok=True)
     db.init_app(app)
 
-    from . import auth, seed, shop
+    from . import auth, lab, seed, shop
     app.cli.add_command(seed.seed_command)
     app.register_blueprint(auth.bp)
     app.register_blueprint(shop.bp)
+    app.register_blueprint(lab.bp)
 
     return app

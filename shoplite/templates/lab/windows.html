@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Windows · Lab{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Windows &amp; tabs</h1>
+<div class="flex flex-wrap gap-3">
+  <a id="policy-tab" href="{{ url_for('lab.policy') }}" target="_blank" rel="noopener"
+     class="rounded-md bg-slate-900 text-white px-4 py-2">Return policy (new tab)</a>
+  <button id="policy-popup" class="rounded-md bg-slate-900 text-white px-4 py-2"
+          onclick="window.open('{{ url_for('lab.policy') }}', 'policy', 'width=600,height=500')">Return policy (popup)</button>
+</div>
+{% endblock %}

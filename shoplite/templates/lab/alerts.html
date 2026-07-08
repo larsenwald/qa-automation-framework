@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Alerts · Lab{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">JavaScript alerts</h1>
+<div class="flex flex-wrap gap-3">
+  <button id="js-alert" class="rounded-md bg-slate-900 text-white px-4 py-2" onclick="showAlert()">Show alert</button>
+  <button id="js-confirm" class="rounded-md bg-slate-900 text-white px-4 py-2" onclick="showConfirm()">Clear cart?</button>
+  <button id="js-prompt" class="rounded-md bg-slate-900 text-white px-4 py-2" onclick="showPrompt()">Apply coupon</button>
+</div>
+<p class="mt-6 text-sm">Result: <span id="result" class="font-medium"></span></p>
+<script>
+  const out = document.getElementById("result");
+  function showAlert() {
+    alert("Your session will expire in 5 minutes.");
+    out.textContent = "Alert acknowledged";
+  }
+  function showConfirm() {
+    out.textContent = confirm("Remove all items from your cart?") ? "Cart cleared" : "Kept items";
+  }
+  function showPrompt() {
+    const code = prompt("Enter coupon code:");
+    if (code === null) { out.textContent = "Coupon cancelled"; return; }
+    out.textContent = code.trim().toUpperCase() === "SAVE10" ? "Coupon SAVE10 applied: 10% off" : `Invalid coupon: ${code}`;
+  }
+</script>
+{% endblock %}

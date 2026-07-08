@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Lab · ShopLite{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold">Automation lab</h1>
+<p class="text-slate-500 mt-1 mb-6">Pages built to practice the tricky parts of browser automation.</p>
+<div class="grid sm:grid-cols-2 gap-4">
+  {% for slug, title, blurb in pages %}
+  <a href="{{ url_for('lab.' + slug) }}" id="lab-{{ slug }}" class="bg-white rounded-xl border border-slate-200 p-5 hover:border-indigo-400">
+    <h2 class="font-medium">{{ title }}</h2>
+    <p class="text-sm text-slate-500 mt-1">{{ blurb }}</p>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}

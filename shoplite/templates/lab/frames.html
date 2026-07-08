@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Frames · Lab{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-2" id="frames-heading">Need help?</h1>
+<p class="text-slate-500 mb-4">Our support widget is embedded below.</p>
+<iframe id="chat-frame" name="chat-frame" src="{{ url_for('lab.chat_widget') }}"
+        class="w-full max-w-md h-80 bg-white rounded-xl border border-slate-200"></iframe>
+{% endblock %}

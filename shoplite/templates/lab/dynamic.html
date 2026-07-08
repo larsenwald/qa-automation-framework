@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Dynamic loading · Lab{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Dynamic loading</h1>
+
+<section class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
+  <h2 class="font-medium mb-2">Recommended for you</h2>
+  <button id="load-recs" class="rounded-md bg-slate-900 text-white px-4 py-2">Load recommendations</button>
+  <div id="spinner" class="hidden mt-3 text-sm text-slate-500">Loading...</div>
+  <ul id="recs" class="mt-3 text-sm list-disc pl-5"></ul>
+</section>
+
+<section class="bg-white rounded-xl border border-slate-200 p-5">
+  <h2 class="font-medium mb-2">Flash sale</h2>
+  <p class="text-sm text-slate-500">The claim button unlocks when the countdown hits zero.</p>
+  <p class="mt-2">Starts in <span id="countdown">3</span>s</p>
+  <button id="claim-deal" disabled class="mt-2 rounded-md bg-indigo-600 text-white px-4 py-2 disabled:opacity-40">Claim deal</button>
+  <p id="deal-status" class="mt-2 text-sm"></p>
+</section>
+
+<script>
+  document.getElementById("load-recs").addEventListener("click", () => {
+    const spinner = document.getElementById("spinner");
+    spinner.classList.remove("hidden");
+    // Random delay so tests can't get away with a fixed sleep.
+    setTimeout(() => {
+      spinner.classList.add("hidden");
+      const list = document.getElementById("recs");
+      ["Wireless Mouse", "Desk Lamp", "Sticker Pack"].forEach((name) => {
+        const li = document.createElement("li");
+        li.className = "rec-item";
+        li.textContent = name;
+        list.appendChild(li);
+      });
+    }, 800 + Math.random() * 1500);
+  });
+
+  let remaining = 3;
+  const timer = setInterval(() => {
+    remaining -= 1;
+    document.getElementById("countdown").textContent = remaining;
+    if (remaining <= 0) {
+      clearInterval(timer);
+      document.getElementById("claim-deal").disabled = false;
+    }
+  }, 1000);
+  document.getElementById("claim-deal").addEventListener("click", () => {
+    document.getElementById("deal-status").textContent = "Deal claimed!";
+  });
+</script>
+{% endblock %}

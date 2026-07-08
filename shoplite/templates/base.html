@@ -11,6 +11,7 @@
     <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
       <a href="{{ url_for('shop.index') }}" class="font-bold text-indigo-600 text-lg" data-testid="brand">ShopLite</a>
       <div class="flex items-center gap-4 text-sm">
+        <a href="{{ url_for('lab.index') }}" id="lab-link" class="text-slate-600 hover:text-indigo-600">Lab</a>
         {% if g.user %}
           <a href="{{ url_for('shop.cart') }}" id="cart-link" class="text-slate-600 hover:text-indigo-600">Cart (<span id="cart-count">{{ cart_count }}</span>)</a>
           <a href="{{ url_for('shop.orders') }}" id="orders-link" class="text-slate-600 hover:text-indigo-600">Orders</a>
