@@ -26,6 +26,9 @@
 <div class="flex justify-end mt-4 text-lg">
   <span>Subtotal:&nbsp;</span><strong id="cart-subtotal">{{ subtotal|money }}</strong>
 </div>
+<div class="flex justify-end mt-4">
+  <a href="{{ url_for('shop.checkout') }}" id="checkout-button" class="rounded-md bg-indigo-600 text-white px-5 py-2 font-medium hover:bg-indigo-700">Checkout</a>
+</div>
 {% else %}
 <p id="empty-cart" class="text-slate-500">Your cart is empty.</p>
 {% endif %}

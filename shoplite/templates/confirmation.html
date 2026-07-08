@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Order #{{ order['id'] }} · ShopLite{% endblock %}
+{% block content %}
+<div class="max-w-xl bg-white rounded-xl border border-slate-200 p-6">
+  <h1 class="text-2xl font-semibold text-emerald-700" id="confirmation-heading">Thank you for your order!</h1>
+  <p class="mt-2 text-slate-600">Order number <strong id="order-number">{{ order['id'] }}</strong> ·
+     status <span id="order-status" class="font-medium">{{ order['status'] }}</span></p>
+  <ul class="mt-4 text-sm divide-y" id="order-items">
+    {% for i in items %}
+      <li class="py-2 flex justify-between order-item" data-sku="{{ i['sku'] }}">
+        <span>{{ i['name'] }} &times; {{ i['quantity'] }}</span>
+        <span>{{ (i['unit_price_cents'] * i['quantity'])|money }}</span>
+      </li>
+    {% endfor %}
+  </ul>
+  <div class="mt-4 text-sm space-y-1">
+    <div class="flex justify-between"><span>Subtotal</span><span>{{ order['subtotal_cents']|money }}</span></div>
+    <div class="flex justify-between"><span>Tax</span><span>{{ order['tax_cents']|money }}</span></div>
+    <div class="flex justify-between font-semibold text-base"><span>Total</span><span id="order-total">{{ order['total_cents']|money }}</span></div>
+  </div>
+</div>
+{% endblock %}

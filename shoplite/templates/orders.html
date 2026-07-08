@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Orders · ShopLite{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Order history</h1>
+{% if orders %}
+<table class="w-full bg-white rounded-xl border border-slate-200 text-sm" id="orders-table">
+  <thead class="text-left text-slate-500 border-b">
+    <tr><th class="p-3">Order</th><th class="p-3">Placed</th><th class="p-3">Status</th><th class="p-3">Total</th></tr>
+  </thead>
+  <tbody>
+    {% for o in orders %}
+    <tr class="order-row border-b last:border-0">
+      <td class="p-3"><a href="{{ url_for('shop.confirmation', order_id=o['id']) }}" class="text-indigo-600">#{{ o['id'] }}</a></td>
+      <td class="p-3">{{ o['created_at'] }}</td>
+      <td class="p-3">{{ o['status'] }}</td>
+      <td class="p-3">{{ o['total_cents']|money }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p id="no-orders" class="text-slate-500">You haven't placed any orders yet.</p>
+{% endif %}
+{% endblock %}

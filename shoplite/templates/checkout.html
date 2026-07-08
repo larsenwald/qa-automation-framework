@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Checkout · ShopLite{% endblock %}
+{% macro field(name, label, type="text") %}
+  <label class="block text-sm">{{ label }}
+    <input id="{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ form.get(name, '') }}"
+           class="mt-1 w-full rounded-md border px-3 py-2 {{ 'border-rose-400' if errors.get(name) else 'border-slate-300' }}">
+  </label>
+  {% if errors.get(name) %}<p class="field-error text-xs text-rose-600 mt-1" id="{{ name }}-error">{{ errors[name] }}</p>{% endif %}
+{% endmacro %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-6">Checkout</h1>
+<div class="grid md:grid-cols-5 gap-6">
+  <form method="post" id="checkout-form" class="md:col-span-3 bg-white rounded-xl border border-slate-200 p-6 space-y-4" novalidate>
+    {{ field("full_name", "Full name") }}
+    {{ field("email", "Email", "email") }}
+    {{ field("address", "Street address") }}
+    {{ field("zip_code", "ZIP code") }}
+    <button id="place-order" class="w-full rounded-md bg-indigo-600 text-white py-2 font-medium hover:bg-indigo-700">Place order</button>
+  </form>
+  <aside class="md:col-span-2 bg-white rounded-xl border border-slate-200 p-6 text-sm h-fit" id="order-summary">
+    <h2 class="font-semibold mb-3">Order summary</h2>
+    {% for r in rows %}
+      <div class="flex justify-between py-1"><span>{{ r['name'] }} &times; {{ r['quantity'] }}</span><span>{{ r['line_total']|money }}</span></div>
+    {% endfor %}
+    <hr class="my-3">
+    <div class="flex justify-between"><span>Subtotal</span><span id="summary-subtotal">{{ subtotal|money }}</span></div>
+    <div class="flex justify-between"><span>Tax (8%)</span><span id="summary-tax">{{ tax|money }}</span></div>
+    <div class="flex justify-between font-semibold text-base mt-2"><span>Total</span><span id="summary-total">{{ total|money }}</span></div>
+  </aside>
+</div>
+{% endblock %}
