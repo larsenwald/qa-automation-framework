@@ -1,0 +1,16 @@
+{
+  "valid": [
+    {"id": "standard-user", "username": "standard_user", "password": "secret_sauce"},
+    {"id": "qa-lead", "username": "qa_lead", "password": "Passw0rd!"}
+  ],
+  "invalid": [
+    {"id": "wrong-password", "username": "standard_user", "password": "wrong"},
+    {"id": "unknown-user", "username": "nobody", "password": "secret_sauce"},
+    {"id": "empty-both", "username": "", "password": ""},
+    {"id": "empty-password", "username": "standard_user", "password": ""},
+    {"id": "username-case", "username": "STANDARD_USER", "password": "secret_sauce"},
+    {"id": "password-case", "username": "standard_user", "password": "SECRET_SAUCE"},
+    {"id": "sql-injection", "username": "' OR '1'='1' --", "password": "x"},
+    {"id": "script-tag", "username": "<script>alert(1)</script>", "password": "x"}
+  ]
+}
