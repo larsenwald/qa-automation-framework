@@ -14,7 +14,7 @@ class LoginPage(BasePage):
     def login(self, username, password):
         self.type(self.USERNAME, username)
         self.type(self.PASSWORD, password)
-        self.click(self.SUBMIT)
+        self.click_and_wait_for_reload(self.SUBMIT)
         return self
 
     def login_as(self, username, password):

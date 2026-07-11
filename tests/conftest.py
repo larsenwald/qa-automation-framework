@@ -2,6 +2,7 @@ import pytest
 
 from framework.driver_factory import SUPPORTED_BROWSERS, create_driver
 from framework.live_server import LiveServer
+from pages.login_page import LoginPage
 
 
 def pytest_addoption(parser):
@@ -36,3 +37,10 @@ def driver(request):
     drv = create_driver(opts.browser, headless=not opts.headed, grid_url=opts.grid_url)
     yield drv
     drv.quit()
+
+
+@pytest.fixture
+def logged_in(driver, base_url):
+    """A browser already signed in as the standard demo user."""
+    LoginPage(driver, base_url).login_as("standard_user", "secret_sauce")
+    return driver

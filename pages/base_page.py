@@ -50,6 +50,16 @@ class BasePage:
     def click(self, locator: Locator):
         self.wait().until(EC.element_to_be_clickable(locator)).click()
 
+    def click_and_wait_for_reload(self, locator: Locator):
+        """Click something that submits a form or navigates, then wait for the new document.
+
+        Without this, the next find() can grab an element from the *old* page and blow up
+        with StaleElementReferenceException a moment later.
+        """
+        old_page = self.driver.find_element(By.TAG_NAME, "html")
+        self.click(locator)
+        self.wait().until(EC.staleness_of(old_page))
+
     def type(self, locator: Locator, text, clear=True):
         el = self.find(locator)
         if clear:
