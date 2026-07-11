@@ -20,9 +20,16 @@ def login_required(view):
     @functools.wraps(view)
     def wrapped(**kwargs):
         if g.user is None:
-            return redirect(url_for("auth.login"))
+            return redirect(url_for("auth.login", next=request.full_path.rstrip("?")))
         return view(**kwargs)
     return wrapped
+
+
+def safe_next(target):
+    """Only allow same-site relative paths, so ?next= can't become an open redirect."""
+    if not target or not target.startswith("/") or target.startswith("//") or "\\" in target:
+        return None
+    return target
 
 
 @bp.route("/login", methods=("GET", "POST"))
@@ -38,7 +45,7 @@ def login():
             session.clear()
             session["user_id"] = user["id"]
             flash(f"Welcome back, {user['username']}!", "success")
-            return redirect(url_for("shop.index"))
+            return redirect(safe_next(request.args.get("next")) or url_for("shop.index"))
     return render_template("login.html", error=error)
 
 
