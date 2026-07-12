@@ -9,8 +9,18 @@ SUPPORTED_BROWSERS = ("chrome", "firefox", "edge")
 WINDOW_SIZE = (1366, 900)
 
 
+# Chromium pops a "save password?" / "password found in a data breach" bubble after a form
+# login. It swallows the next click, so tests that log in first would randomly do nothing.
+CHROMIUM_PREFS = {
+    "credentials_enable_service": False,
+    "profile.password_manager_enabled": False,
+    "profile.password_manager_leak_detection": False,
+}
+
+
 def _chrome_options(headless):
     opts = webdriver.ChromeOptions()
+    opts.add_experimental_option("prefs", CHROMIUM_PREFS)
     if headless:
         opts.add_argument("--headless=new")
     opts.add_argument(f"--window-size={WINDOW_SIZE[0]},{WINDOW_SIZE[1]}")
@@ -22,6 +32,7 @@ def _chrome_options(headless):
 
 def _edge_options(headless):
     opts = webdriver.EdgeOptions()
+    opts.add_experimental_option("prefs", CHROMIUM_PREFS)
     if headless:
         opts.add_argument("--headless=new")
     opts.add_argument(f"--window-size={WINDOW_SIZE[0]},{WINDOW_SIZE[1]}")
