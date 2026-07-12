@@ -57,3 +57,15 @@ def test_add_multiple_from_product_page(logged_in, base_url):
     assert cart.line("MS-002").quantity == 3
     assert cart.subtotal_cents == 3 * 2999
 
+
+@pytest.mark.regression
+def test_anonymous_add_to_cart_goes_to_login_then_catalog(driver, base_url):
+    catalog = CatalogPage(driver, base_url).open()
+    # Header shows no cart for guests, so click the button directly.
+    catalog.click_and_wait_for_reload(catalog.add_button_for("Wireless Mouse"))
+    login = LoginPage(driver, base_url)
+    assert login.current_path.startswith("/login")
+    login.login("standard_user", "secret_sauce")
+    login.wait_for_text(login.CURRENT_USER, "standard_user")
+    assert "Method Not Allowed" not in driver.page_source
+    assert login.current_path == "/"

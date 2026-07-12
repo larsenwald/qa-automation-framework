@@ -20,7 +20,11 @@ def login_required(view):
     @functools.wraps(view)
     def wrapped(**kwargs):
         if g.user is None:
-            return redirect(url_for("auth.login", next=request.full_path.rstrip("?")))
+            # Only GET pages can be "returned to". A POST endpoint like /cart/add/2 would
+            # answer the post-login GET with 405 (BUG-002).
+            next_url = request.full_path.rstrip("?") if request.method == "GET" else None
+            flash("Please log in to continue.", "info")
+            return redirect(url_for("auth.login", next=next_url))
         return view(**kwargs)
     return wrapped
 
