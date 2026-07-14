@@ -9,6 +9,7 @@ from shoplite.seed import seed
 
 class LiveServer:
     def __init__(self, db_path, host="127.0.0.1", port=0):
+        self.db_path = db_path
         self.app = create_app({"TESTING": True, "DATABASE": str(db_path), "SECRET_KEY": "test-secret"})
         self.reset_data()
         self._server = make_server(host, port, self.app, threaded=True)

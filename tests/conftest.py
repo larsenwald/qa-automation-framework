@@ -1,5 +1,6 @@
 import pytest
 
+from framework.db_client import DbClient
 from framework.driver_factory import SUPPORTED_BROWSERS, create_driver
 from framework.live_server import LiveServer
 from pages.login_page import LoginPage
@@ -23,6 +24,11 @@ def live_server(tmp_path_factory):
 @pytest.fixture(scope="session")
 def base_url(live_server):
     return live_server.url
+
+
+@pytest.fixture(scope="session")
+def db(live_server):
+    return DbClient(live_server.db_path)
 
 
 @pytest.fixture(autouse=True)

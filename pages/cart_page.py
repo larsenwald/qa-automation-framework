@@ -52,6 +52,6 @@ class CartPage(BasePage):
         return self
 
     def proceed_to_checkout(self):
-        self.click(self.CHECKOUT)
+        self.click_and_wait_for_reload(self.CHECKOUT)
         from .checkout_page import CheckoutPage
         return CheckoutPage(self.driver, self.base_url)
