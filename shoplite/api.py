@@ -6,7 +6,7 @@ from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from werkzeug.security import check_password_hash
 
 from .db import get_db
-from .shop import cart_rows, get_order, place_order, tax_for, validate_checkout
+from .shop import CartError, add_item, cart_rows, get_order, place_order, stock_problems, tax_for, validate_checkout
 
 bp = Blueprint("api", __name__, url_prefix="/api")
 TOKEN_MAX_AGE = 3600
@@ -136,15 +136,13 @@ def add_cart_item():
     product_id, quantity = data.get("product_id"), data.get("quantity", 1)
     if not isinstance(product_id, int) or not isinstance(quantity, int):
         return error("product_id and quantity must be integers", 400)
-    db = get_db()
-    if db.execute("SELECT 1 FROM products WHERE id = ?", (product_id,)).fetchone() is None:
+    product = get_db().execute("SELECT * FROM products WHERE id = ?", (product_id,)).fetchone()
+    if product is None:
         return error("Product not found", 404)
-    db.execute(
-        """INSERT INTO cart_items (user_id, product_id, quantity) VALUES (?, ?, ?)
-           ON CONFLICT (user_id, product_id) DO UPDATE SET quantity = quantity + excluded.quantity""",
-        (g.api_user["id"], product_id, quantity),
-    )
-    db.commit()
+    try:
+        add_item(g.api_user["id"], product, quantity)
+    except CartError as exc:
+        return error(str(exc), 422)
     return jsonify(cart_json(g.api_user["id"])), 201
 
 
@@ -187,6 +185,8 @@ def create_order():
     rows = cart_rows(g.api_user["id"])
     if not rows:
         return error("Cart is empty", 409)
+    if problems := stock_problems(rows):
+        return error("Insufficient stock", 409, details=problems)
     subtotal = sum(r["line_total"] for r in rows)
     order_id = place_order(g.api_user["id"], rows, subtotal, tax_for(subtotal), form)
     order, items = get_order(order_id, g.api_user["id"])

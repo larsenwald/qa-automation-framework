@@ -52,12 +52,48 @@ def product(product_id):
 
 def cart_rows(user_id):
     return get_db().execute(
-        """SELECT p.id, p.name, p.sku, p.price_cents, c.quantity,
+        """SELECT p.id, p.name, p.sku, p.price_cents, p.stock, c.quantity,
                   p.price_cents * c.quantity AS line_total
            FROM cart_items c JOIN products p ON p.id = c.product_id
            WHERE c.user_id = ? ORDER BY p.name""",
         (user_id,),
     ).fetchall()
+
+
+class CartError(ValueError):
+    """A cart change that breaks a business rule. The message is safe to show to users."""
+
+
+def parse_quantity(raw):
+    try:
+        return int(raw)
+    except (TypeError, ValueError):
+        return None
+
+
+def add_item(user_id, product, qty):
+    """Single place where cart quantities are validated, shared by the web UI and the API (BUG-003)."""
+    db = get_db()
+    in_cart = db.execute(
+        "SELECT COALESCE(SUM(quantity), 0) FROM cart_items WHERE user_id = ? AND product_id = ?",
+        (user_id, product["id"]),
+    ).fetchone()[0]
+    available = product["stock"] - in_cart
+    if available <= 0:
+        raise CartError(f"No more {product['name']} available. You already have {in_cart} in your cart.")
+    if qty is None or not 1 <= qty <= available:
+        extra = f" (you already have {in_cart} in your cart)" if in_cart else ""
+        raise CartError(f"Quantity must be between 1 and {available}{extra}.")
+    db.execute(
+        """INSERT INTO cart_items (user_id, product_id, quantity) VALUES (?, ?, ?)
+           ON CONFLICT (user_id, product_id) DO UPDATE SET quantity = quantity + excluded.quantity""",
+        (user_id, product["id"], qty),
+    )
+    db.commit()
+
+
+def stock_problems(rows):
+    return [f"Only {r['stock']} {r['name']} left in stock." for r in rows if r["quantity"] > r["stock"]]
 
 
 @bp.app_context_processor
@@ -85,13 +121,11 @@ def add_to_cart(product_id):
     item = db.execute("SELECT * FROM products WHERE id = ?", (product_id,)).fetchone()
     if item is None:
         abort(404)
-    qty = request.form.get("quantity", 1, type=int)
-    db.execute(
-        """INSERT INTO cart_items (user_id, product_id, quantity) VALUES (?, ?, ?)
-           ON CONFLICT (user_id, product_id) DO UPDATE SET quantity = quantity + excluded.quantity""",
-        (g.user["id"], product_id, qty),
-    )
-    db.commit()
+    try:
+        add_item(g.user["id"], item, parse_quantity(request.form.get("quantity", 1)))
+    except CartError as exc:
+        flash(str(exc), "error")
+        return redirect(request.referrer or url_for("shop.product", product_id=product_id))
     flash(f"Added {item['name']} to your cart.", "success")
     return redirect(url_for("shop.cart"))
 
@@ -135,6 +169,12 @@ def checkout():
     rows = cart_rows(g.user["id"])
     if not rows:
         flash("Your cart is empty.", "info")
+        return redirect(url_for("shop.cart"))
+    # Stock can change between "add to cart" and "checkout", so check again here.
+    problems = stock_problems(rows)
+    if problems:
+        for p in problems:
+            flash(p + " Please update your cart.", "error")
         return redirect(url_for("shop.cart"))
     subtotal = sum(r["line_total"] for r in rows)
     tax = tax_for(subtotal)
