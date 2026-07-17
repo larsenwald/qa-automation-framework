@@ -129,12 +129,17 @@ def get_cart():
     return jsonify(cart_json(g.api_user["id"]))
 
 
+def _is_int(value):
+    # JSON true/false arrive as Python bools, and bool is a subclass of int (BUG-004).
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
 @bp.post("/cart")
 @token_required
 def add_cart_item():
     data = request.get_json(silent=True) or {}
     product_id, quantity = data.get("product_id"), data.get("quantity", 1)
-    if not isinstance(product_id, int) or not isinstance(quantity, int):
+    if not _is_int(product_id) or not _is_int(quantity):
         return error("product_id and quantity must be integers", 400)
     product = get_db().execute("SELECT * FROM products WHERE id = ?", (product_id,)).fetchone()
     if product is None:

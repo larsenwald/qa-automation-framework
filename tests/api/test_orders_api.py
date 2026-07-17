@@ -29,6 +29,8 @@ def test_add_to_cart_calculates_totals(auth_api, assert_schema):
     ({"product_id": "2", "quantity": 1}, 400),
     ({"product_id": 2, "quantity": 1.5}, 400),
     ({"quantity": 1}, 400),
+    ({"product_id": 2, "quantity": True}, 400),   # bool is an int subclass in Python (BUG-004)
+    ({"product_id": True, "quantity": 1}, 400),
 ])
 @pytest.mark.db
 def test_add_to_cart_rejects_bad_input(auth_api, db, assert_schema, payload, status):
