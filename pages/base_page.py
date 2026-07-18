@@ -3,12 +3,28 @@
 Rule of the framework: tests never call driver.find_element or time.sleep directly.
 They go through page objects, and page objects go through these explicit-wait helpers.
 """
+from selenium.common.exceptions import StaleElementReferenceException, WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select, WebDriverWait
 
 Locator = tuple[str, str]
+
+
+def is_stale(element) -> bool:
+    """Like EC.staleness_of, but also handles ChromeDriver's race where an element from a
+    document that was *just* replaced gives a generic WebDriverException ("Node with given id
+    does not belong to the document") instead of StaleElementReferenceException."""
+    try:
+        element.is_enabled()
+        return False
+    except StaleElementReferenceException:
+        return True
+    except WebDriverException as exc:
+        if "does not belong to the document" in str(exc):
+            return True
+        raise
 
 DEFAULT_TIMEOUT = 10
 
@@ -58,7 +74,7 @@ class BasePage:
         """
         old_page = self.driver.find_element(By.TAG_NAME, "html")
         self.click(locator)
-        self.wait().until(EC.staleness_of(old_page))
+        self.wait().until(lambda _: is_stale(old_page))
 
     def type(self, locator: Locator, text, clear=True):
         el = self.find(locator)
