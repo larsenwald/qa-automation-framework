@@ -57,6 +57,7 @@ def pytest_html_report_title(report):
 
 @pytest.fixture(scope="session")
 def live_server(tmp_path_factory):
+    # Session scope is per xdist worker, so parallel workers never share a database.
     server = LiveServer(tmp_path_factory.mktemp("db") / "shoplite.sqlite").start()
     yield server
     server.stop()
