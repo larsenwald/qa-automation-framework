@@ -19,7 +19,9 @@ def pytest_addoption(parser):
     group.addoption("--browser", default="chrome", choices=SUPPORTED_BROWSERS,
                     help="Browser to run UI tests in (default: chrome)")
     group.addoption("--headed", action="store_true", help="Show the browser window")
-    group.addoption("--grid-url", default=None, help="Selenium Grid URL, e.g. http://localhost:4444")
+    group.addoption("--grid-url", default=None, help="Selenium Grid URL, e.g. http://localhost:4444/wd/hub")
+    group.addoption("--app-host", default="host.docker.internal",
+                    help="Hostname Grid browsers use to reach the app under test (only used with --grid-url)")
 
 
 ARTIFACTS = Path("reports")
@@ -56,9 +58,14 @@ def pytest_html_report_title(report):
 
 
 @pytest.fixture(scope="session")
-def live_server(tmp_path_factory):
+def live_server(request, tmp_path_factory):
     # Session scope is per xdist worker, so parallel workers never share a database.
-    server = LiveServer(tmp_path_factory.mktemp("db") / "shoplite.sqlite").start()
+    db_path = tmp_path_factory.mktemp("db") / "shoplite.sqlite"
+    opts = request.config.option
+    if opts.grid_url:
+        server = LiveServer(db_path, host="0.0.0.0", public_host=opts.app_host).start()
+    else:
+        server = LiveServer(db_path).start()
     yield server
     server.stop()
 

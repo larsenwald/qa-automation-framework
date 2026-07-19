@@ -1,0 +1,39 @@
+# Selenium Grid 4 with one node per browser.
+#   docker compose -f docker-compose.grid.yml up -d
+#   pytest -m ui --grid-url http://localhost:4444/wd/hub --browser firefox -n 3
+# Grid console: http://localhost:4444/ui   Live VNC view of a node: http://localhost:7900 (password: secret)
+services:
+  selenium-hub:
+    image: selenium/hub:4.33.0
+    ports:
+      - "4442:4442"
+      - "4443:4443"
+      - "4444:4444"
+
+  chrome:
+    image: selenium/node-chrome:4.33.0
+    shm_size: 2gb
+    depends_on: [selenium-hub]
+    environment: &node-env
+      SE_EVENT_BUS_HOST: selenium-hub
+      SE_EVENT_BUS_PUBLISH_PORT: "4442"
+      SE_EVENT_BUS_SUBSCRIBE_PORT: "4443"
+      SE_NODE_MAX_SESSIONS: "3"
+    extra_hosts: &host-gw
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "7900:7900"
+
+  firefox:
+    image: selenium/node-firefox:4.33.0
+    shm_size: 2gb
+    depends_on: [selenium-hub]
+    environment: *node-env
+    extra_hosts: *host-gw
+
+  edge:
+    image: selenium/node-edge:4.33.0
+    shm_size: 2gb
+    depends_on: [selenium-hub]
+    environment: *node-env
+    extra_hosts: *host-gw

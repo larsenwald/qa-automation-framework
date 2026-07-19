@@ -8,12 +8,14 @@ from shoplite.seed import seed
 
 
 class LiveServer:
-    def __init__(self, db_path, host="127.0.0.1", port=0):
+    def __init__(self, db_path, host="127.0.0.1", port=0, public_host=None):
+        """public_host: the name browsers use to reach us. For Selenium Grid in Docker that's
+        host.docker.internal, since 127.0.0.1 inside a container is the container itself."""
         self.db_path = db_path
         self.app = create_app({"TESTING": True, "DATABASE": str(db_path), "SECRET_KEY": "test-secret"})
         self.reset_data()
         self._server = make_server(host, port, self.app, threaded=True)
-        self.url = f"http://{host}:{self._server.server_port}"
+        self.url = f"http://{public_host or host}:{self._server.server_port}"
         self._thread = threading.Thread(target=self._server.serve_forever, daemon=True)
 
     def start(self):
