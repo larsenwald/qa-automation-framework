@@ -1,0 +1,87 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 9 * * 1-5"   # nightly regression, weekdays
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    name: API tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-test.txt
+      - run: pip install -r requirements-test.txt
+      - run: pytest -m api -n auto --junitxml=reports/api-junit.xml --html=reports/api.html --self-contained-html
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: api-report
+          path: reports/
+
+  newman:
+    name: Postman collection
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Start ShopLite
+        run: |
+          flask --app wsgi seed
+          flask --app wsgi run --port 5000 &
+          for i in $(seq 1 20); do curl -sf http://127.0.0.1:5000/api/health && break; sleep 0.5; done
+      - name: Run Newman
+        run: |
+          npx --yes newman@6 run postman/ShopLite.postman_collection.json \
+            -e postman/local.postman_environment.json \
+            --reporters cli,junit --reporter-junit-export reports/newman.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: newman-report
+          path: reports/
+
+  ui:
+    name: UI tests (${{ matrix.browser }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chrome, firefox, edge]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-test.txt
+      - run: pip install -r requirements-test.txt
+      - name: Install Edge
+        if: matrix.browser == 'edge'
+        uses: browser-actions/setup-edge@v1
+      # Chrome and Firefox are preinstalled on ubuntu-latest; Selenium Manager fetches the drivers.
+      - name: Run UI tests
+        run: >
+          pytest -m ui --browser ${{ matrix.browser }} -n 4
+          --junitxml=reports/ui-${{ matrix.browser }}-junit.xml
+          --html=reports/ui-${{ matrix.browser }}.html --self-contained-html
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-report-${{ matrix.browser }}
+          path: reports/
